@@ -12,8 +12,12 @@ public class GoodsApp {
 		
 		goods.showInfo();
 		
-		Goods goods2 = new Goods();
+		Goods goods2 = new Goods("tv", 10000, 10, 10);
+		goods2.showInfo();
+		
 		Goods goods3 = new Goods();
+		goods3.showInfo();
+		
 		System.out.println("Goods Count:" + Goods.countOfGoods );
 		
 		// discount price 구하기

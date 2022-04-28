@@ -6,9 +6,25 @@ public class Goods {
 	private int price;
 	private int countStock;
 	private int countSold;
-		
+	
+	public Goods(String name) {
+		// countOfGoods = countOfGoods + 1;
+		// this.name = name;
+		this(name, 0, 0, 0);
+	}
+	
 	public Goods() {
+		// countOfGoods = countOfGoods + 1;
+		this(null, 0, 0, 0);
+	}
+	
+	public Goods(String name, int price, int countStock, int countSold) {
 		countOfGoods = countOfGoods + 1;
+		
+		this.name = name;
+		this.price = price;
+		this.countSold = countStock;
+		this.countSold = countSold;
 	}
 	
 	public String getName() {
