@@ -58,9 +58,9 @@ public class TV {
 
 	public void status() {
 		System.out.println(
-			"TV[power=" + (power ? "on" : "off") + ", " + 
-			"channel=" + channel + ", " +
-			"volume=" + volume + "]");
+			"TV[channel=" + channel + ", " +
+			"volume=" + volume + ", " +
+			"power=" + (power ? "on" : "off") +"]");
 	}
 	
 }
