@@ -62,5 +62,4 @@ public class TV {
 			"volume=" + volume + ", " +
 			"power=" + (power ? "on" : "off") +"]");
 	}
-	
 }
