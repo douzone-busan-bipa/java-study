@@ -10,7 +10,6 @@ import com.douzone.paint.shape.Triangle;
 import com.douzone.paint.text.GraphicText;
 
 public class Main {
-
 	public static void main(String[] args) {
 		// Point point1 = new Point();
 		// point1.setX(20);
