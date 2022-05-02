@@ -38,8 +38,7 @@ public class DateTest {
 			((date < 10) ? "0" : "") + date + " " +
 			hours + ":" +
 			minutes + ":" +
-			seconds
-		);
+			seconds);
 	}
 
 	private static void printDate01(Date d) {
