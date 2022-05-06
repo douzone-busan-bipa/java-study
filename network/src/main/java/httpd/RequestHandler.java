@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 
 public class RequestHandler extends Thread {
+	private static final String DOCUMENT_ROOT = "./webapp";
 	private Socket socket;
 	
 	public RequestHandler(Socket socket) {
@@ -21,11 +22,11 @@ public class RequestHandler extends Thread {
 		try {
 			// get IOStream
 			OutputStream outputStream = socket.getOutputStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
-			
+			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), "utf-8"));
+
 			// logging Remote Host IP Address & Port
-			InetSocketAddress inetSocketAddress = ( InetSocketAddress )socket.getRemoteSocketAddress();
-			consoleLog("connected from " + inetSocketAddress.getAddress().getHostAddress() + ":" + inetSocketAddress.getPort() );
+			InetSocketAddress inetSocketAddress = (InetSocketAddress)socket.getRemoteSocketAddress();
+			consoleLog("connected from " + inetSocketAddress.getAddress().getHostAddress() + ":" + inetSocketAddress.getPort());
 			
 			String request = null;
 			while(true) {
@@ -36,11 +37,11 @@ public class RequestHandler extends Thread {
 					break;
 				}
 				
-				// SimpleHttpServer는 요청 헤더만 읽음
+				// SimpleHttpServer에서는 요청의 헤더만 읽음
 				if("".equals(line)) {
 					break;
 				}
-
+				
 				// 헤더의 첫 번째 라인만 읽음
 				if(request == null) {
 					request = line;
@@ -51,38 +52,37 @@ public class RequestHandler extends Thread {
 			// 요청 처리
 			// consoleLog(request);
 			String[] tokens = request.split(" ");
-			
 			if("GET".equals(tokens[0])) {
-				consoleLog("request:" + tokens[1]);
-				responseStaticResource(outputStream, tokens[1], tokens[2]);
+				consoleLog("request: " + tokens[1]);
+				reponseStaticResource(outputStream, tokens[1], tokens[2]);
 			} else {
-				// method: POST, PUT, DELETE, HEAD, CONNECT
-				// SimpleHttpServer에서는 무시(400 Bad Request 응답)
+				// methods: POST, PUT, DELETE, HEAD, CONNECT
+				// SimpleHttpServer 에서는 무시(400 Bad Request 처리)
 				response400Error(outputStream, tokens[1], tokens[2]);
 			}
 			
 			// 예제 응답입니다.
 			// 서버 시작과 테스트를 마친 후, 주석 처리 합니다.
-			// outputStream.write( "HTTP/1.1 200 OK\r\n".getBytes( "UTF-8" ) );
-			// outputStream.write( "Content-Type:text/html; charset=utf-8\r\n".getBytes( "UTF-8" ) );
-			// outputStream.write( "\r\n".getBytes() );
-			// outputStream.write( "<h1>이 페이지가 잘 보이면 실습과제 SimpleHttpServer를 시작할 준비가 된 것입니다.</h1>".getBytes( "UTF-8" ) );
-		} catch( Exception ex ) {
-			consoleLog( "error:" + ex );
+			// outputStream.write("HTTP/1.1 200 OK\n".getBytes("UTF-8"));
+			// outputStream.write("Content-Type:text/html; charset=utf-8\n".getBytes("UTF-8"));
+			// outputStream.write("\n".getBytes() );
+			// outputStream.write("<h1>이 페이지가 잘 보이면 실습과제 SimpleHttpServer를 시작할 준비가 된 것입니다.</h1>".getBytes("UTF-8"));
+
+		} catch(Exception ex) {
+			consoleLog("error:" + ex);
 		} finally {
 			// clean-up
-			try{
-				if( socket != null && socket.isClosed() == false ) {
+			try {
+				if(socket != null && socket.isClosed() == false) {
 					socket.close();
-				}
-				
-			} catch( IOException ex ) {
-				consoleLog( "error:" + ex );
+				}				
+			} catch(IOException ex) {
+				consoleLog("error:" + ex);
 			}
 		}			
 	}
 
-	private void responseStaticResource(
+	private void reponseStaticResource(
 		OutputStream outputStream,
 		String url,
 		String protocol) throws IOException {
@@ -92,9 +92,9 @@ public class RequestHandler extends Thread {
 			url = "/index.html";
 		}
 		
-		File file = new File("./webapp" + url);
+		File file = new File(DOCUMENT_ROOT + url);
 		if(!file.exists()) {
-			response404Response(outputStream, url, protocol);
+			response404Error(outputStream, url, protocol);
 			return;
 		}
 		
@@ -102,33 +102,50 @@ public class RequestHandler extends Thread {
 		byte[] body = Files.readAllBytes(file.toPath());
 		String contentType = Files.probeContentType(file.toPath());
 		
-		// response
 		outputStream.write((protocol + " 200 OK\n").getBytes("UTF-8"));
 		outputStream.write(("Content-Type:" + contentType + "; charset=utf-8\n").getBytes("UTF-8"));
-		outputStream.write("\n".getBytes());
+		outputStream.write("\n".getBytes() );
 		outputStream.write(body);
 	}
 
-	private void response400Error(OutputStream outputStream, String url, String protocol) {
-		/*
-		 *  HTTP/1.1 400 Bad Request\n
-		 *  Content-Type: text/html; charset=utf-8\n"
-		 *  \n
-		 *  /error/400.html 내용
-		 */
-
+	private void response400Error(
+		OutputStream os,
+		String url,
+		String protocol) throws IOException {
+		File file = new File(DOCUMENT_ROOT + "/error/400.html");
+		if(file.exists() == false) {
+			response404Error(os, url, protocol);
+			return;
+		}
+		
+		byte[] body = Files.readAllBytes(file.toPath());
+		String contentType = Files.probeContentType(file.toPath());
+		os.write((protocol + " 400 Bad Request\n").getBytes("UTF-8"));
+		os.write(("Content-Type:" + contentType + "; charset=utf-8\n").getBytes( "UTF-8" ));
+		os.write("\r\n".getBytes() );
+		os.write(body);
 	}
 	
-	private void response404Response(OutputStream outputStream, String url, String protocol) {
-		/*
-		 *  HTTP/1.1 404 File Not Found\n
-		 *  Content-Type: text/html; charset=utf-8\n"
-		 *  \n
-		 *  /error/404.html 내용
-		 */
-	}
+	private void response404Error(
+		OutputStream os,
+		String url,
+		String protocol)  throws IOException {
 
-	public void consoleLog( String message ) {
-		System.out.println( "[RequestHandler#" + getId() + "] " + message );
+		File file = new File(DOCUMENT_ROOT + "/error/404.html");
+		if(file.exists() == false) {
+			System.out.println("file not found:" + file.getAbsolutePath());
+			return;
+		}
+		
+		byte[] body = Files.readAllBytes(file.toPath());
+		String contentType = Files.probeContentType(file.toPath());
+		os.write((protocol + " 404 File Not Found\n").getBytes("UTF-8"));
+		os.write(("Content-Type:" + contentType + "; charset=utf-8\n").getBytes( "UTF-8" ));
+		os.write("\r\n".getBytes() );
+		os.write(body);
+	}
+	
+	public void consoleLog(String message) {
+		System.out.println("[RequestHandler#" + getId() + "] " + message);
 	}
 }
