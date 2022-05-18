@@ -18,6 +18,7 @@ public class BookShop {
 		books[9] = new Book(10, "풀하우스", "원수연");
 
 		Scanner scanner = new Scanner(System.in);
+		displayBookInfo(books);
 		System.out.print("대여 하고 싶은 책의 번호를 입력하세요:");
 		int num = scanner.nextInt();
 		scanner.close();
